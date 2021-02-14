@@ -1,0 +1,59 @@
+-- getNoticeList - ID=3에서 8까지 Notice 조회
+SET @rownum:=0;
+SELECT @rownum:=@rownum+1, NOTICE.* FROM NOTICE ORDER BY REGDATE DESC;
+
+SET @rownum:=0;
+SELECT @rownum:=@rownum+1 as num, N.* 
+FROM (SELECT * FROM NOTICE ORDER BY REGDATE DESC) AS N
+LIMIT 3, 8;
+
+-- getNoticeCountnotice
+
+-- getNotice
+CREATE VIEW NOTICE_VIEW
+AS
+SELECT N.*, COUNT(C.ID) AS CMT_COUNT FROM NOTICE N
+LEFT JOIN COMMENT C ON N.ID = C.NOTICE_ID
+GROUP BY N.ID, N.TITLE, N.WRITER_ID, N.CONTENT, N.REGDATE, N.HIT, N.FILES, N.PUB
+-- ORDER BY N.regdate DESC;
+
+-- 위의 NOTICE_VIEW와 동시에 실행하면 오류 발생한다.
+-- 아래 프로시져는 따로 실행해야 한다.
+-- 위의 Query를 아래와 함께 사용하기 위해서 JOIN을 사용하지 않고 VIEW를 사용하여 간단히 해결할 수 있다.
+SET @rownum:=0;
+SELECT T.* FROM (
+	SELECT @rownum:=@rownum+1 as NUM, NV.*
+	FROM (SELECT * FROM NOTICE_VIEW WHERE TITLE LIKE '%%' ORDER BY REGDATE DESC) AS NV
+) AS T
+WHERE NUM BETWEEN 0 AND 10;
+-- LIMIT 0, 9
+
+-- getNextNotice : ID=3의 Notice 조회.
+SET @rownum:=0;
+SELECT * FROM NOTICE
+WHERE ID = (
+	SELECT N.ID FROM (
+		SELECT @rownum:=@rownum+1 AS num, ID FROM NOTICE WHERE REGDATE > (SELECT REGDATE FROM NOTICE WHERE ID=3) ORDER BY REGDATE
+	) AS N
+	WHERE	num=1
+);
+
+-- 위 Query 내부(시험용)
+SET @rownum:=0;
+SELECT num, N.ID FROM (
+	SELECT @rownum:=@rownum+1 AS num, ID FROM NOTICE WHERE REGDATE > (SELECT REGDATE FROM NOTICE WHERE ID=3) ORDER BY REGDATE
+) AS N
+WHERE	num=1
+
+SET @rownum:=0;
+SELECT @rownum:=@rownum+1 AS num, ID FROM NOTICE WHERE REGDATE > (SELECT REGDATE FROM NOTICE WHERE ID=3) ORDER BY REGDATE
+
+-- getPrevNotice
+SET @rownum:=0;
+SELECT * FROM NOTICE
+WHERE ID = (
+	SELECT N.ID FROM (
+		SELECT @rownum:=@rownum+1 AS num, ID FROM NOTICE WHERE REGDATE < (SELECT REGDATE FROM NOTICE WHERE ID=3) ORDER BY REGDATE DESC
+	) AS N
+	WHERE	num=1
+);

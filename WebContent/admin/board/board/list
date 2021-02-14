@@ -1,0 +1,6 @@
+이 파일이 열리면 안된다.
+짜가다.
+
+URL이 잘 못 열릴때 사용.
+
+@WebServlet("/admin/board/notice/list") 실제로는 이것이 호출된다.
